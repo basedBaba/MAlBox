@@ -30,6 +30,7 @@ MANIFEST
 ghidra_11.3.1_PUBLIC_20250219.zip
 uploads/
 test/
+bin/
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
