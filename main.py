@@ -3,7 +3,9 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from tools.pyghira import decompile_and_objdump
+from src.pyghira import decompile_and_objdump
+
+from src.virustotal import virustotal_report
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +15,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @app.route("/decompile", methods=["POST"])
-def upload_file():
+def decompile():
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -35,6 +37,26 @@ def upload_file():
             "objdump_text": objdump_text,
         }
     )
+
+
+@app.route("/virustotal", methods=["POST"])
+def virustotal():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(filepath)
+
+    try:
+        analysis_report = virustotal_report(filepath)
+    except Exception as e:
+        return jsonify({"error": f"Processing failed: {str(e)}"}), 500
+
+    return jsonify({"analysis_report": analysis_report})
 
 
 if __name__ == "__main__":
